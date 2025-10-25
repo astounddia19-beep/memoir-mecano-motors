@@ -1,0 +1,192 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      UserRole @default(CLIENT)
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  reservationsAsClient Reservation[]
+  reservationsAsMechanic Reservation[]
+  products             Product[]
+  orders               Order[]
+  sentMessages         Message[] @relation("MessageSender")
+  receivedMessages     Message[] @relation("MessageReceiver")
+  reviews              Review[]
+
+  @@map("users")
+}
+
+model Mechanic {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone       String
+  address     String
+  city        String
+  latitude    Float
+  longitude   Float
+  specialties String[]
+  experience  Int
+  description String
+  image       String?
+  hourlyRate  Int
+  availability String[]
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  reservations Reservation[]
+  reviews     Review[]
+
+  @@map("mechanics")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  price       Int      // Price in FCFA
+  category    String
+  brand       String
+  image       String?
+  stock       Int
+  vendorId    String
+  vendor      User     @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  rating      Float    @default(0)
+  reviewCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+model Reservation {
+  id               String            @id @default(cuid())
+  clientId         String
+  client           User              @relation("ReservationClient", fields: [clientId], references: [id], onDelete: Cascade)
+  mechanicId       String
+  mechanic         Mechanic          @relation(fields: [mechanicId], references: [id], onDelete: Cascade)
+  service          String
+  date             DateTime
+  time             String
+  status           ReservationStatus @default(PENDING)
+  notes            String?
+  vehicleMake      String
+  vehicleModel     String
+  vehicleYear      Int
+  vehiclePlate     String
+  estimatedDuration Int
+  estimatedPrice   Int
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@map("reservations")
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  clientId        String
+  client          User        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  total           Int
+  status          OrderStatus @default(PENDING)
+  shippingAddress String
+  paymentMethod   PaymentMethod?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  items OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int
+  price     Int     // Price at time of purchase
+
+  @@map("order_items")
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  clientId   String
+  client     User     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  mechanicId String
+  mechanic   Mechanic @relation(fields: [mechanicId], references: [id], onDelete: Cascade)
+  rating     Int
+  comment    String
+  service    String
+  createdAt  DateTime @default(now())
+
+  @@map("reviews")
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  senderId      String
+  sender        User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId    String
+  receiver      User     @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  content       String
+  read          Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@map("messages")
+}
+
+// Enums
+enum UserRole {
+  CLIENT
+  MECHANIC
+  VENDOR
+  ADMIN
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  WAVE
+  ORANGE_MONEY
+  FREE_MONEY
+  CARD
+  CASH
+}
+
