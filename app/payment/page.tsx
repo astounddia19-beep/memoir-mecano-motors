@@ -23,6 +23,9 @@ export default function PaymentPage() {
   const { toast } = useToast()
   const [processing, setProcessing] = useState(false)
   const [paymentCompleted, setPaymentCompleted] = useState(false)
+  const [shippingAddress, setShippingAddress] = useState("")
+  const [shippingCity, setShippingCity] = useState("")
+  const [shippingPhone, setShippingPhone] = useState("")
 
   const paymentMethod = searchParams.get("method") || "wave"
 
@@ -36,10 +39,44 @@ export default function PaymentPage() {
     if (items.length === 0 && !paymentCompleted) {
       router.push("/cart")
     }
-  }, [items, router, paymentCompleted])
+    // Pré-remplir les champs si disponibles
+    if (user) {
+      setShippingAddress(user.address || "")
+      setShippingPhone(user.phone || "")
+    }
+  }, [items, router, paymentCompleted, user])
 
   const handlePaymentConfirmation = () => {
     if (!user) return
+
+    // Validation
+    if (!shippingAddress.trim()) {
+      toast({
+        title: "Adresse requise",
+        description: "Veuillez renseigner l'adresse de livraison",
+        variant: "destructive",
+      })
+      setProcessing(false)
+      return
+    }
+    if (!shippingCity.trim()) {
+      toast({
+        title: "Ville requise",
+        description: "Veuillez renseigner la ville de livraison",
+        variant: "destructive",
+      })
+      setProcessing(false)
+      return
+    }
+    if (!shippingPhone.trim()) {
+      toast({
+        title: "Téléphone requis",
+        description: "Veuillez renseigner un numéro de téléphone pour la livraison",
+        variant: "destructive",
+      })
+      setProcessing(false)
+      return
+    }
 
     setProcessing(true)
 
@@ -58,7 +95,9 @@ export default function PaymentPage() {
         })),
         total: totalPrice,
         status: "pending",
-        shippingAddress: user.address || "Adresse non spécifiée",
+        shippingAddress: `${shippingAddress}, ${shippingCity}`.trim(),
+        shippingCity,
+        shippingPhone: shippingPhone.trim(),
         paymentMethod,
         createdAt: new Date().toISOString(),
         estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 jours
@@ -283,6 +322,51 @@ export default function PaymentPage() {
             <h1 className="text-3xl font-bold text-foreground mb-2">Paiement</h1>
             <p className="text-muted-foreground">Finalisez votre commande de {totalPrice.toLocaleString()} FCFA</p>
           </div>
+
+          {/* Informations de livraison */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Informations de livraison</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="shipping-address">Adresse de livraison *</Label>
+                <Input
+                  id="shipping-address"
+                  placeholder="Ex: Route de Rufisque, Parcelles Assainies"
+                  value={shippingAddress}
+                  onChange={(e) => setShippingAddress(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="shipping-city">Ville *</Label>
+                  <Input
+                    id="shipping-city"
+                    placeholder="Ex: Dakar"
+                    value={shippingCity}
+                    onChange={(e) => setShippingCity(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="shipping-phone">Téléphone pour livraison *</Label>
+                  <Input
+                    id="shipping-phone"
+                    type="tel"
+                    placeholder="77 123 45 67"
+                    value={shippingPhone}
+                    onChange={(e) => setShippingPhone(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                * Ces informations sont nécessaires pour la livraison de votre commande
+              </p>
+            </CardContent>
+          </Card>
 
           {renderPaymentMethod()}
         </div>

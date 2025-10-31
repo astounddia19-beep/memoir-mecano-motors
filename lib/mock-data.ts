@@ -1,9 +1,12 @@
+// importer les types en scope
 import type { Mechanic, Review, Reservation, Product, Message, Conversation } from "./types"
+// ré-exporter les mêmes types pour qu'ils soient importables depuis "@/lib/mock-data"
+export type { Mechanic, Review, Reservation, Product, Message, Conversation } from "./types"
 
 export const mockMechanics: Mechanic[] = [
   {
     id: "1",
-    name: "Garage Mouride",
+    name: "Atelier Souleymane",
     email: "contact@garagemouride.sn",
     phone: "+221 77 123 45 67",
     address: "Route de Rufisque, Parcelles Assainies",
@@ -22,7 +25,7 @@ export const mockMechanics: Mechanic[] = [
   },
   {
     id: "2",
-    name: "Auto Service Plateau",
+    name: "Garage Awa Plateau",
     email: "info@autoserviceplateau.sn",
     phone: "+221 77 234 56 78",
     address: "Avenue Léopold Sédar Senghor",
@@ -41,7 +44,7 @@ export const mockMechanics: Mechanic[] = [
   },
   {
     id: "3",
-    name: "Mécanique Express Pikine",
+    name: "Mécanique Express Ndeye",
     email: "contact@mecaniqueexpress.sn",
     phone: "+221 77 345 67 89",
     address: "Pikine Icotaf",
@@ -60,7 +63,7 @@ export const mockMechanics: Mechanic[] = [
   },
   {
     id: "4",
-    name: "Atelier Mbacké",
+    name: "Atelier Mbaye",
     email: "atelier@mbacke.sn",
     phone: "+221 77 456 78 90",
     address: "Route de Touba",
@@ -95,6 +98,45 @@ export const mockMechanics: Mechanic[] = [
     image: "/modern-electric-car-service.jpg",
     hourlyRate: 7000,
     availability: ["Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
+  },
+  // Ajouts de prénoms sénégalais supplémentaires
+  {
+    id: "6",
+    name: "Atelier Fatou",
+    email: "fatou.atelier@example.com",
+    phone: "+221 77 111 22 33",
+    address: "Cité Keur Gorgui",
+    city: "Dakar",
+    latitude: 14.7065,
+    longitude: -17.4557,
+    specialties: ["Diagnostic", "Électricité", "Freins"],
+    rating: 4.7,
+    reviewCount: 73,
+    experience: 9,
+    description:
+      "Atelier réputé pour la rigueur et le service client. Interventions rapides et soignées.",
+    image: "/professional-auto-workshop.jpg",
+    hourlyRate: 5200,
+    availability: ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"],
+  },
+  {
+    id: "7",
+    name: "Garage Ibrahima Services",
+    email: "ibrahima.services@example.com",
+    phone: "+221 77 222 33 44",
+    address: "Quartier Liberté 6",
+    city: "Dakar",
+    latitude: 14.705,
+    longitude: -17.46,
+    specialties: ["Moteur", "Transmission", "Diagnostic"],
+    rating: 4.8,
+    reviewCount: 115,
+    experience: 12,
+    description:
+      "Spécialiste des réparations mécaniques complexes avec un excellent rapport qualité/prix.",
+    image: "/modern-auto-repair-shop.png",
+    hourlyRate: 5800,
+    availability: ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
   },
   {
     id: "6",
@@ -420,3 +462,25 @@ export const mockMessages: Message[] = [
     read: false,
   },
 ]
+
+// vendors mock (used by orders page)
+export const mockVendors = [
+  { id: "v1", name: "Pièces Auto Pro", phone: "+221700000001", email: "vendor1@example.com" },
+  { id: "v2", name: "Électro Auto", phone: "+221700000002", email: "vendor2@example.com" },
+  { id: "v3", name: "Pneus Express", phone: "+221700000003", email: "vendor3@example.com" },
+]
+
+// persistence helpers pour mécaniciens
+export function getMechanics(): Mechanic[] {
+  if (typeof window === "undefined") return mockMechanics
+  const stored = localStorage.getItem("mecano_mechanics")
+  return stored ? JSON.parse(stored) : mockMechanics
+}
+
+export function addMechanic(mech: Mechanic) {
+  if (typeof window === "undefined") return
+  const list = getMechanics()
+  list.unshift(mech)
+  localStorage.setItem("mecano_mechanics", JSON.stringify(list))
+  return list
+}

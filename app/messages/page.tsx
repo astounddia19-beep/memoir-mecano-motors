@@ -1,11 +1,12 @@
 "use client"
 
-import type React from "react"
+export const dynamic = 'force-dynamic'
 
+import { useAuth } from "@/lib/auth-context"
+import { mockConversations, mockMessages } from "@/lib/mock-data"
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { useAuth } from "@/lib/auth-context"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,13 +15,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Send, MessageSquare } from "lucide-react"
-import { mockConversations, mockMessages } from "@/lib/mock-data"
 
 export default function MessagesPage() {
   const { user, isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const mechanicId = searchParams.get("mechanicId")
+  const vendorId = searchParams.get("vendorId")
 
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
   const [messageText, setMessageText] = useState("")
@@ -32,15 +33,22 @@ export default function MessagesPage() {
   }, [isAuthenticated, isLoading, router])
 
   useEffect(() => {
-    if (mechanicId && mockConversations.length > 0) {
-      const conv = mockConversations.find((c) => c.mechanicId === mechanicId)
-      if (conv) {
-        setSelectedConversation(conv.id)
+    if (mechanicId) {
+      const conv = mockConversations.find((c: any) =>
+        Array.isArray(c.participants) ? c.participants.includes(mechanicId) : c.mechanicId === mechanicId
+      )
+      if (conv) setSelectedConversation(conv.id)
+      else {
+        const id = "conv_" + Date.now()
+        setSelectedConversation(id)
       }
-    } else if (mockConversations.length > 0 && !selectedConversation) {
-      setSelectedConversation(mockConversations[0].id)
+    } else if (vendorId) {
+      const conv = mockConversations.find((c: any) =>
+        Array.isArray(c.participants) ? c.participants.includes(vendorId) : (c as any).vendorId === vendorId
+      )
+      if (conv) setSelectedConversation(conv.id)
     }
-  }, [mechanicId, selectedConversation])
+  }, [mechanicId, vendorId])
 
   if (isLoading) {
     return (
@@ -52,15 +60,17 @@ export default function MessagesPage() {
 
   if (!user) return null
 
-  const userConversations = mockConversations.filter((conv) =>
-    // if conversation has participants array
-    Array.isArray((conv as any).participants)
-      ? (conv as any).participants.includes(user.id)
-      // fallback if conversation has different shape
-      : (conv as any).userId === user.id || (conv as any).ownerId === user.id
-  )
+  const userConversations = mockConversations.filter((conv: any) => {
+    if (!user) return false
+    return (
+      conv.participants?.includes(user.id) ||
+      conv.clientId === user.id ||
+      conv.mechanicId === user.id ||
+      conv.vendorId === user.id
+    )
+  })
   const currentConversation = userConversations.find((c) => c.id === selectedConversation)
-  const conversationMessages = mockMessages.filter((m) => m.conversationId === selectedConversation)
+  const conversationMessages = mockMessages.filter((m: any) => m.conversationId === selectedConversation)
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault()
@@ -163,7 +173,7 @@ export default function MessagesPage() {
                   {/* Messages */}
                   <ScrollArea className="flex-1 p-4">
                     <div className="space-y-4">
-                      {conversationMessages.map((message) => {
+                      {conversationMessages.map((message: any) => {
                         const isOwn = message.senderId === user.id || message.senderRole === user.role
                         return (
                           <div key={message.id} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>

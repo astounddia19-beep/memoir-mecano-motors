@@ -23,6 +23,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { mockVendors } from "@/lib/mock-data"
 
 interface OrderItem {
   productId: string
@@ -40,6 +41,10 @@ interface Order {
   total: number
   status: "pending" | "processing" | "shipped" | "delivered" | "cancelled"
   shippingAddress: string
+  // vendor and delivery fields added
+  vendorId?: string
+  deliveryAddress?: string
+  deliveryOptions?: { id: string; label: string; price: number }[]
   paymentMethod?: "wave" | "orange-money" | "free-money" | "card" | "cash"
   createdAt: string
   estimatedDelivery?: string
@@ -52,6 +57,13 @@ interface OrderTimeline {
   date: string
   description: string
   completed: boolean
+}
+
+interface Vendor {
+  id: string
+  name?: string
+  phone?: string
+  email?: string
 }
 
 export default function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -69,12 +81,13 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
   useEffect(() => {
     const loadOrder = async () => {
       if (user) {
-        const { id } = await params
+        const resolvedParams = await params
+        const { id } = resolvedParams
         const ordersKey = `mecano_orders_${user.id}`
         const storedOrders = localStorage.getItem(ordersKey)
         if (storedOrders) {
-          const orders = JSON.parse(storedOrders)
-          const foundOrder = orders.find((o: Order) => o.id === id)
+          const orders: Order[] = JSON.parse(storedOrders)
+          const foundOrder = orders.find((o) => o.id === id)
           if (foundOrder) {
             setOrder(foundOrder)
           }
@@ -83,7 +96,7 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
       }
     }
     loadOrder()
-  }, [user, params, router])
+  }, [user, router, params])
 
   if (isLoading || loading) {
     return (
@@ -195,6 +208,8 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
   }
 
   const timeline = getOrderTimeline(order)
+
+  const vendor = mockVendors.find((v) => v.id === order?.vendorId)
 
   return (
     <div className="min-h-screen bg-background">
@@ -378,10 +393,34 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
               </Card>
             )}
           </div>
+
+          {/* Affichage vendeur et livraison */}
+          <div className="mt-4 p-4 border rounded">
+            <CardContent>
+  <p className="font-medium">Vendeur</p>
+  <p>{vendor?.name ?? "N/A"}</p>
+  <p>{vendor?.phone ?? ""}</p>
+  <p>{vendor?.email ?? ""}</p>
+  <Link href={`/messages?vendorId=${vendor?.id}`}>
+    <Button size="sm" variant="outline">Contacter vendeur</Button>
+  </Link>
+
+  <h4 className="mt-3 font-semibold">Adresse de livraison</h4>
+  <p>{order?.deliveryAddress ?? order?.shippingAddress ?? "Aucune adresse fournie"}</p>
+
+  <h4 className="mt-3 font-semibold">Options de livraison</h4>
+  <ul>
+    {(order?.deliveryOptions && order.deliveryOptions.length > 0)
+      ? order.deliveryOptions.map(opt => <li key={opt.id}>{opt.label} — {opt.price.toLocaleString()} FCFA</li>)
+      : <li>Standard — 0 FCFA</li>}
+  </ul>
+</CardContent>
+          </div>
         </div>
       </main>
     </div>
   )
 }
+
 
 

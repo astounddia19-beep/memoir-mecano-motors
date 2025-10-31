@@ -11,25 +11,72 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  role      UserRole @default(CLIENT)
-  phone     String?
-  address   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String    @id @default(cuid())
+  firstName     String
+  lastName      String
+  name          String?   // Champ déprécié, maintenu pour compatibilité
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          UserRole  @default(CLIENT)
+  phone         String?
+  address       String?
+  password      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  // Relations
-  reservationsAsClient Reservation[]
-  reservationsAsMechanic Reservation[]
+  // NextAuth.js relations
+  accounts Account[]
+  sessions Session[]
+
+  // App relations
   products             Product[]
   orders               Order[]
   sentMessages         Message[] @relation("MessageSender")
   receivedMessages     Message[] @relation("MessageReceiver")
   reviews              Review[]
+  mechanic             Mechanic?
 
   @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
 }
 
 model Mechanic {
@@ -52,7 +99,6 @@ model Mechanic {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  reservations Reservation[]
   reviews     Review[]
 
   @@map("mechanics")
@@ -83,9 +129,7 @@ model Product {
 model Reservation {
   id               String            @id @default(cuid())
   clientId         String
-  client           User              @relation("ReservationClient", fields: [clientId], references: [id], onDelete: Cascade)
   mechanicId       String
-  mechanic         Mechanic          @relation(fields: [mechanicId], references: [id], onDelete: Cascade)
   service          String
   date             DateTime
   time             String

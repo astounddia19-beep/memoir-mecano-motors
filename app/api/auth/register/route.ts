@@ -1,31 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
-import { z } from 'zod'
-
-const registerSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  name: z.string().min(2),
-  role: z.enum(['CLIENT', 'MECHANIC', 'VENDOR']),
-  phone: z.string().optional(),
-})
+import { registerSchema } from '@/lib/validations'
+import { validateRequest } from '@/lib/validation-middleware'
+import { handleError } from '@/lib/error-handler'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password, name, role, phone } = registerSchema.parse(body)
+    const validation = validateRequest(registerSchema, body)
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    })
-
-    if (existingUser) {
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'Un utilisateur avec cet email existe déjà' },
+        { error: validation.error },
         { status: 400 }
       )
+    }
+
+    const { email, password, firstName, lastName, role, phone, address } = validation.data
+
+    // Check if user already exists (seulement si email fourni)
+    if (email && email.trim()) {
+      const existingUser = await prisma.user.findUnique({
+        where: { email: email.trim() }
+      })
+
+      if (existingUser) {
+        return NextResponse.json(
+          { error: 'Un utilisateur avec cet email existe déjà' },
+          { status: 400 }
+        )
+      }
     }
 
     // Hash password
@@ -34,12 +39,14 @@ export async function POST(request: NextRequest) {
     // Create user
     const user = await prisma.user.create({
       data: {
-        email,
-        name,
+        firstName,
+        lastName,
+        name: `${firstName} ${lastName}`, // Maintien pour compatibilité
+        email: email && email.trim() ? email.trim() : null,
+        password: hashedPassword,
         role,
         phone,
-        // Note: In a real app, you'd store the hashed password
-        // For now, we'll use a simple approach
+        address,
       }
     })
 
@@ -73,10 +80,10 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Registration error:', error)
+    const { message, statusCode } = handleError(error)
     return NextResponse.json(
-      { error: 'Erreur lors de l\'inscription' },
-      { status: 500 }
+      { error: message },
+      { status: statusCode }
     )
   }
 }

@@ -8,8 +8,10 @@ async function main() {
   // Create users
   const client = await prisma.user.create({
     data: {
-      email: 'client@example.com',
-      name: 'Sophie Laurent',
+      firstName: 'Awa',
+      lastName: 'Diop',
+      name: 'Awa Diop', // Maintien pour compatibilité
+      email: 'awa.diop@example.com',
       role: 'CLIENT',
       phone: '+221 77 123 45 67',
       address: 'Dakar, Sénégal',
@@ -18,8 +20,10 @@ async function main() {
 
   const vendor = await prisma.user.create({
     data: {
-      email: 'vendor@example.com',
-      name: 'Pièces Auto Pro',
+      firstName: 'Souleymane',
+      lastName: 'Mbaye',
+      name: 'Souleymane Mbaye', // Maintien pour compatibilité
+      email: 'souleymane.mbaye@example.com',
       role: 'VENDOR',
       phone: '+221 77 234 56 78',
       address: 'Dakar, Sénégal',
@@ -28,8 +32,10 @@ async function main() {
 
   const mechanicUser = await prisma.user.create({
     data: {
-      email: 'mechanic@example.com',
-      name: 'Garage Mouride',
+      firstName: 'Ndeye',
+      lastName: 'Sarr',
+      name: 'Ndeye Sarr', // Maintien pour compatibilité
+      email: 'ndeye.sarr@example.com',
       role: 'MECHANIC',
       phone: '+221 77 345 67 89',
       address: 'Route de Rufisque, Parcelles Assainies',

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Calendar, Clock, Car, Euro } from "lucide-react"
 import type { Reservation } from "@/lib/types"
 import Link from "next/link"
+import { useAuth } from "@/lib/auth-context"
 
 interface ReservationCardProps {
   reservation: Reservation
@@ -19,6 +20,8 @@ const statusConfig = {
 
 export function ReservationCard({ reservation, showMechanic = true }: ReservationCardProps) {
   const status = statusConfig[reservation.status]
+  const { user } = useAuth()
+  const key = `mecano_reservations_${user?.id ?? "guest"}`
 
   return (
     <Card>
@@ -77,7 +80,16 @@ export function ReservationCard({ reservation, showMechanic = true }: Reservatio
             </Link>
           )}
           {reservation.status === "confirmed" && (
-            <Button variant="outline" className="flex-1 bg-transparent text-destructive hover:text-destructive">
+            <Button variant="destructive" size="sm" onClick={() => {
+              const reason = window.prompt("Motif d'annulation (facultatif) :")
+              if (reason === null) return
+              const stored = localStorage.getItem(key)
+              const list = stored ? JSON.parse(stored) : []
+              const next = list.map((r: any) => r.id === reservation.id ? { ...r, status: "cancelled", cancelReason: reason, cancelledAt: new Date().toISOString() } : r)
+              localStorage.setItem(key, JSON.stringify(next))
+              // optional: trigger state refresh or reload
+              window.location.reload()
+            }}>
               Annuler
             </Button>
           )}

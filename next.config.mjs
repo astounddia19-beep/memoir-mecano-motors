@@ -1,11 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
-    ignoreBuildErrors: true,
+    // Ne pas ignorer les erreurs TypeScript en production
+    ignoreBuildErrors: process.env.NODE_ENV === 'development',
   },
   images: {
-    unoptimized: true,
+    unoptimized: process.env.NODE_ENV === 'development',
+    domains: ['localhost'],
   },
+  serverExternalPackages: ['@prisma/client'],
 }
 
 export default nextConfig

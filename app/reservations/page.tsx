@@ -69,6 +69,17 @@ export default function ReservationsPage() {
     return mockMechanics.find((m) => m.id === mechanicId)
   }
 
+  const handleCancel = (id: string) => {
+    const reason = window.prompt('Motif d\'annulation (facultatif) :')
+    if (reason === null) return // annulation de la prompt
+    setReservations(prev => {
+      const next = prev.map(r => r.id === id ? { ...r, status: 'cancelled', cancelledAt: new Date().toISOString(), cancelReason: reason } : r)
+      const key = `mecano_reservations_${user.id}`
+      localStorage.setItem(key, JSON.stringify(next))
+      return next
+    })
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <DashboardHeader />
@@ -201,11 +212,8 @@ export default function ReservationsPage() {
                         )}
                         
                         <div className="flex gap-2 pt-2">
-                          <Button variant="outline" size="sm">
-                            Voir les détails
-                          </Button>
                           {reservation.status === "pending" && (
-                            <Button variant="destructive" size="sm">
+                            <Button variant="destructive" size="sm" onClick={() => handleCancel(reservation.id)}>
                               Annuler
                             </Button>
                           )}

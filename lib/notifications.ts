@@ -1,24 +1,27 @@
-import nodemailer from 'nodemailer'
-import webpush from 'web-push'
-
-// Email configuration
+"use server"
+import nodemailer from "nodemailer"
+import webpush from "web-push"
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
+  port: Number(process.env.SMTP_PORT || 587),
+  secure: false,
   auth: {
     user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    pass: process.env.SMTP_PASSWORD || process.env.SMTP_PASS, // Support both naming conventions
   },
 })
 
-
-// Web Push configuration
-webpush.setVapidDetails(
-  'mailto:contact@mecanomotors.sn',
-  process.env.VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-)
+// initialize web-push VAPID keys if present
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    "mailto:contact@mecanomotors.sn",
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  )
+} else {
+  console.warn("VAPID keys not set: push notifications disabled")
+}
 
 export interface NotificationData {
   title: string
@@ -39,9 +42,9 @@ export async function sendEmailNotification(
       subject,
       html,
     })
-    console.log('Email sent successfully')
+    console.log("Email sent successfully")
   } catch (error) {
-    console.error('Error sending email:', error)
+    console.error("Error sending email:", error)
     throw error
   }
 }
@@ -52,9 +55,9 @@ export async function sendPushNotification(
 ) {
   try {
     await webpush.sendNotification(subscription, JSON.stringify(data))
-    console.log('Push notification sent successfully')
+    console.log("Push notification sent successfully")
   } catch (error) {
-    console.error('Error sending push notification:', error)
+    console.error("Error sending push notification:", error)
     throw error
   }
 }
@@ -62,7 +65,7 @@ export async function sendPushNotification(
 // Email templates
 export const emailTemplates = {
   reservationConfirmed: (mechanicName: string, date: string, time: string) => ({
-    subject: 'Réservation confirmée - Mecano Motor\'s',
+    subject: "Réservation confirmée - Mecano Motor's",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #2d5a27;">Réservation confirmée</h2>
@@ -75,19 +78,19 @@ export const emailTemplates = {
   }),
 
   orderShipped: (orderId: string, trackingNumber?: string) => ({
-    subject: 'Commande expédiée - Mecano Motor\'s',
+    subject: "Commande expédiée - Mecano Motor's",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #2d5a27;">Commande expédiée</h2>
         <p>Votre commande #${orderId} a été expédiée.</p>
-        ${trackingNumber ? `<p><strong>Numéro de suivi:</strong> ${trackingNumber}</p>` : ''}
+        ${trackingNumber ? `<p><strong>Numéro de suivi:</strong> ${trackingNumber}</p>` : ""}
         <p>Merci pour votre achat !</p>
       </div>
     `
   }),
 
   newMessage: (senderName: string) => ({
-    subject: 'Nouveau message - Mecano Motor\'s',
+    subject: "Nouveau message - Mecano Motor's",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #2d5a27;">Nouveau message</h2>

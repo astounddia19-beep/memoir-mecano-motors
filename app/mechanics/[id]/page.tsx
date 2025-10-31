@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Star, MapPin, Phone, Mail, Clock, Euro, Calendar } from "lucide-react"
 import { mockMechanics, mockReviews } from "@/lib/mock-data"
 import Image from "next/image"
+import type { Mechanic } from "@/lib/mock-data"
 
 export default async function MechanicProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -36,7 +37,7 @@ export default async function MechanicProfilePage({ params }: { params: Promise<
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <div className="aspect-video relative bg-muted">
-                <Image src={mechanic.image || "/placeholder.svg"} alt={mechanic.name} fill className="object-cover" />
+                <Image src={mechanic?.image ?? "/placeholder.svg"} alt={mechanic?.name ?? "Mécanicien"} fill className="object-cover" />
               </div>
               <CardHeader>
                 <div className="flex items-start justify-between gap-4">
@@ -50,8 +51,8 @@ export default async function MechanicProfilePage({ params }: { params: Promise<
                   <div className="flex items-center gap-2 bg-accent text-accent-foreground px-3 py-2 rounded-lg">
                     <Star className="h-5 w-5 fill-current" />
                     <div className="flex flex-col">
-                      <span className="font-bold text-lg leading-none">{mechanic.rating}</span>
-                      <span className="text-xs">({mechanic.reviewCount} avis)</span>
+                      <span className="font-bold text-lg leading-none">{mechanic?.rating ?? "-"}</span>
+                      <span className="text-xs">({mechanic?.reviewCount ?? 0} avis)</span>
                     </div>
                   </div>
                 </div>
@@ -59,13 +60,13 @@ export default async function MechanicProfilePage({ params }: { params: Promise<
               <CardContent className="space-y-6">
                 <div>
                   <h3 className="font-semibold text-lg mb-2 text-foreground">À propos</h3>
-                  <p className="text-muted-foreground">{mechanic.description}</p>
+                  <p className="text-muted-foreground">{mechanic?.description ?? ""}</p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-lg mb-3 text-foreground">Spécialités</h3>
                   <div className="flex flex-wrap gap-2">
-                    {mechanic.specialties.map((specialty) => (
+                    {(mechanic?.specialties ?? []).map((specialty: string) => (
                       <Badge key={specialty} variant="secondary" className="text-sm">
                         {specialty}
                       </Badge>
@@ -78,14 +79,14 @@ export default async function MechanicProfilePage({ params }: { params: Promise<
                     <Clock className="h-5 w-5 text-primary" />
                     <div>
                       <p className="text-sm text-muted-foreground">Expérience</p>
-                      <p className="font-semibold text-foreground">{mechanic.experience} ans</p>
+                      <p className="font-semibold text-foreground">{mechanic?.experience ?? "-" } ans</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <Euro className="h-5 w-5 text-primary" />
                     <div>
                       <p className="text-sm text-muted-foreground">Tarif horaire</p>
-                      <p className="font-semibold text-foreground">{mechanic.hourlyRate.toLocaleString()} FCFA/h</p>
+                      <p className="font-semibold text-foreground">{mechanic?.hourlyRate ? mechanic.hourlyRate.toLocaleString() : "-" } FCFA/h</p>
                     </div>
                   </div>
                 </div>
@@ -160,7 +161,7 @@ export default async function MechanicProfilePage({ params }: { params: Promise<
                   <Mail className="h-5 w-5 text-primary" />
                   <div>
                     <p className="text-muted-foreground">Email</p>
-                    <p className="font-medium text-foreground break-all">{mechanic.email}</p>
+                    <p className="font-medium text-foreground break-all">{mechanic?.email ?? ""}</p>
                   </div>
                 </div>
 
@@ -169,7 +170,7 @@ export default async function MechanicProfilePage({ params }: { params: Promise<
                   <div>
                     <p className="text-muted-foreground mb-1">Disponibilités</p>
                     <div className="flex flex-wrap gap-1">
-                      {mechanic.availability.map((day) => (
+                      {(mechanic?.availability ?? []).map((day: string) => (
                         <Badge key={day} variant="outline" className="text-xs">
                           {day}
                         </Badge>
