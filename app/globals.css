@@ -137,3 +137,202 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Hero Animations */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-left {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slide-right {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  @keyframes float-slow {
+    0%, 100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    33% {
+      transform: translateY(-15px) rotate(1deg);
+    }
+    66% {
+      transform: translateY(-10px) rotate(-1deg);
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 0.3;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.5;
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+
+  @keyframes rotate-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes bounce-subtle {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+
+  .animate-hero-fade-in {
+    animation: fade-in 0.8s ease-out forwards;
+  }
+
+  .animate-hero-slide-up {
+    animation: slide-up 0.8s ease-out forwards;
+  }
+
+  .animate-hero-slide-left {
+    animation: slide-left 0.8s ease-out forwards;
+  }
+
+  .animate-hero-slide-right {
+    animation: slide-right 0.8s ease-out forwards;
+  }
+
+  .animate-hero-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-hero-float-slow {
+    animation: float-slow 8s ease-in-out infinite;
+  }
+
+  .animate-hero-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--background) 0%,
+      var(--primary) 50%,
+      var(--background) 100%
+    );
+    background-size: 200% auto;
+    animation: shimmer 3s linear infinite;
+  }
+
+  .animate-rotate-slow {
+    animation: rotate-slow 20s linear infinite;
+  }
+
+  .animate-bounce-subtle {
+    animation: bounce-subtle 2s ease-in-out infinite;
+  }
+
+  .hero-delay-100 {
+    animation-delay: 0.1s;
+    opacity: 0;
+  }
+
+  .hero-delay-200 {
+    animation-delay: 0.2s;
+    opacity: 0;
+  }
+
+  .hero-delay-300 {
+    animation-delay: 0.3s;
+    opacity: 0;
+  }
+
+  .hero-delay-400 {
+    animation-delay: 0.4s;
+    opacity: 0;
+  }
+
+  .hero-delay-500 {
+    animation-delay: 0.5s;
+    opacity: 0;
+  }
+
+  .hero-delay-600 {
+    animation-delay: 0.6s;
+    opacity: 0;
+  }
+
+  .hero-animation-delay-1000 {
+    animation-delay: 1s;
+  }
+}

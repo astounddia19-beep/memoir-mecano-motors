@@ -1,9 +1,13 @@
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
 async function main() {
   console.log('🌱 Seeding database...')
+
+  // Hash password for all users
+  const hashedPassword = await bcrypt.hash('password123', 12)
 
   // Create users
   const client = await prisma.user.create({
@@ -12,6 +16,7 @@ async function main() {
       lastName: 'Diop',
       name: 'Awa Diop', // Maintien pour compatibilité
       email: 'awa.diop@example.com',
+      password: hashedPassword,
       role: 'CLIENT',
       phone: '+221 77 123 45 67',
       address: 'Dakar, Sénégal',
@@ -24,6 +29,7 @@ async function main() {
       lastName: 'Mbaye',
       name: 'Souleymane Mbaye', // Maintien pour compatibilité
       email: 'souleymane.mbaye@example.com',
+      password: hashedPassword,
       role: 'VENDOR',
       phone: '+221 77 234 56 78',
       address: 'Dakar, Sénégal',
@@ -36,6 +42,7 @@ async function main() {
       lastName: 'Sarr',
       name: 'Ndeye Sarr', // Maintien pour compatibilité
       email: 'ndeye.sarr@example.com',
+      password: hashedPassword,
       role: 'MECHANIC',
       phone: '+221 77 345 67 89',
       address: 'Route de Rufisque, Parcelles Assainies',

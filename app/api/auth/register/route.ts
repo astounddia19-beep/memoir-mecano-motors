@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import { registerSchema } from '@/lib/validations'
 import { validateRequest } from '@/lib/validation-middleware'
 import { handleError } from '@/lib/error-handler'
+import { UserRole } from '@prisma/client'
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,6 +37,9 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
+    // Ensure role is a valid UserRole enum value
+    const userRole: UserRole = (role?.toUpperCase() || 'CLIENT') as UserRole
+
     // Create user
     const user = await prisma.user.create({
       data: {
@@ -44,14 +48,14 @@ export async function POST(request: NextRequest) {
         name: `${firstName} ${lastName}`, // Maintien pour compatibilité
         email: email && email.trim() ? email.trim() : null,
         password: hashedPassword,
-        role,
+        role: userRole,
         phone,
         address,
       }
     })
 
     // If user is a mechanic, create mechanic profile
-    if (role === 'MECHANIC') {
+    if (userRole === 'MECHANIC') {
       await prisma.mechanic.create({
         data: {
           userId: user.id,

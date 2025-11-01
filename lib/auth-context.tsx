@@ -51,28 +51,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     setIsLoading(true)
     try {
-      // Validation côté client
-      if (!email || !password) {
-        throw new Error("Email et mot de passe requis")
+      // Appel API réel vers Prisma
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+      
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Email ou mot de passe incorrect")
       }
       
-      if (!email.includes("@")) {
-        throw new Error("Format d'email invalide")
-      }
-      
-      if (password.length < 6) {
-        throw new Error("Le mot de passe doit contenir au moins 6 caractères")
-      }
-      
-      // Simulation d'appel API
-      await new Promise((r) => setTimeout(r, 1000))
-      
-      // En production, remplacer par un vrai appel API
-      const u: User = { 
-        id: "u_" + Date.now().toString(), 
-        email, 
-        name: email.split("@")[0], 
-        role: "client" 
+      const data = await response.json()
+      const u: User = {
+        id: data.user.id,
+        email: data.user.email || "",
+        name: data.user.name || "",
+        role: (data.user.role || "client").toLowerCase() as any,
+        phone: data.user.phone,
+        address: data.user.address,
       }
       setUser(u)
       

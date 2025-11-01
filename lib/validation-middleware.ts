@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 import { z, ZodSchema } from "zod"
 import { handleError } from "./error-handler"
 
-export function validateRequest<T>(
-  schema: ZodSchema<T>,
+export function validateRequest<T extends z.ZodTypeAny>(
+  schema: T,
   data: unknown
-): { success: true; data: T } | { success: false; error: string } {
+): { success: true; data: z.infer<T> } | { success: false; error: string } {
   try {
     const validatedData = schema.parse(data)
     return { success: true, data: validatedData }

@@ -40,7 +40,8 @@ describe('Validation Schemas', () => {
   describe('registerSchema', () => {
     it('should validate correct registration data', () => {
       const validData = {
-        name: 'John Doe',
+        firstName: 'John',
+        lastName: 'Doe',
         email: 'john@example.com',
         password: 'Password123',
         confirmPassword: 'Password123',
@@ -53,7 +54,8 @@ describe('Validation Schemas', () => {
 
     it('should reject mismatched passwords', () => {
       const invalidData = {
-        name: 'John Doe',
+        firstName: 'John',
+        lastName: 'Doe',
         email: 'john@example.com',
         password: 'Password123',
         confirmPassword: 'DifferentPassword',
@@ -64,7 +66,8 @@ describe('Validation Schemas', () => {
 
     it('should reject weak password', () => {
       const invalidData = {
-        name: 'John Doe',
+        firstName: 'John',
+        lastName: 'Doe',
         email: 'john@example.com',
         password: 'weak',
         confirmPassword: 'weak',

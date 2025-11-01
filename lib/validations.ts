@@ -22,7 +22,6 @@ export const registerSchema = z.object({
       >,
     ])
     .transform((v) => v.toString().toUpperCase())
-    .optional()
     .default("CLIENT"),
   phone: z.string().optional(),
   address: z.string().optional(),
